@@ -1,6 +1,6 @@
 # Snake Game
-Follow simple rules to build this game
-a) Draw a board of M x N Grid 
+Follow simple rules to build this game<br>
+a) Draw a board of M x N Grid <br>
 b) Randomly place food and snake on grid ( without over-riding each other's position )
 c) Track movement keys , on press of "up/w" move the snake up by reducing X , 
    similarly for downwards X-- , for vertical left increase/decrease Y--
