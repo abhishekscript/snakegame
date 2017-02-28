@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Snake Game</title>
+</head>
+<script>
+var boardSize = 20;
+var prev_x = 0; var prev_y = 0;
+var exitCode = 0;
+var timer = 500;
+var lastMovementKey = "";
+var gobj = [];
+var temp ;
+function _draw(  ) {
+	var dynamicElements ="";
+	for(var i=0;i<boardSize;i++){
+		for(var j=0;j<boardSize;j++){
+			dynamicElements+="<input type='text' class='box' id='a"+i+'_'+j+"' value=''>"
+		}
+		dynamicElements+="<br>";
+	}
+	document.getElementById('mbox').innerHTML = dynamicElements;
+
+	x= Math.floor((Math.random() * boardSize) + 0);
+	y= Math.floor((Math.random() * boardSize) + 0);
+	prev_x=x;
+	prev_y=y;
+
+	foodVal = _getUni(x, y);
+	x1 = foodVal[0];
+	y1 = foodVal[1];
+	
+	cell = document.getElementById('a'+x+'_'+y)
+	cell.value = "e";
+
+	gobj.push(  { "x" : prev_x , "y" : prev_y  } )
+	cell.style.background="#000";
+	temp = gobj[0];
+
+
+	cell = document.getElementById('a'+x1+'_'+y1)
+	cell.value = ".";
+	cell.style.background="#ff9900";
+
+}
+function _getUni(x,y){
+	x1 = Math.floor((Math.random() * boardSize) + 0);
+	y1 = Math.floor((Math.random() * boardSize) + 0);
+	if(x1 == x && y1 == y){
+		return _getUni(x,y )
+	} else {
+		return [x1,y1];
+	}
+}
+
+function detectFood(){
+	console.log(prev_x, prev_y);
+	var cell = document.getElementById('a'+prev_x+'_'+prev_y);
+	if(cell == null){
+		return [true,'breach','STRIKED WALL'];
+	}
+	else if(cell.value=='.'){
+		cell.value="";
+		document.getElementById('score').value=gobj.length;
+		return [true,'food'];
+	}else if(cell.value=='e' && gobj.length >2 ){
+		return [true,'strike','STRIKED SELF-BODY'];
+	}
+	return [false];
+}
+function reset(){
+	for(var i=0;i<boardSize;i++){
+		for(var j=0;j<boardSize;j++){
+			if(document.getElementById('a'+i+'_'+j).value!='.'){
+				t=document.getElementById('a'+i+'_'+j);
+				t.value="";
+				t.style.background="#fff";
+			}
+		}
+	}
+}
+function generateFood(){
+
+	x= Math.floor((Math.random() * boardSize) + 0);
+	y= Math.floor((Math.random() * boardSize) + 0);
+	var flag=false;
+	for(var i=0;i<gobj.length;i++){
+		if(x == gobj[i].x && y == gobj[i].y ){
+			flag=true;
+		}
+	}
+	if(flag){
+		return generateFood()
+	}else{
+			cell = document.getElementById('a'+x+'_'+y)
+			cell.value = ".";
+			cell.style.background="#ff9900";
+	}
+}
+//= gobj
+function _initialMotion() {
+	//o_y=prev_y;
+	//o_x=prev_x;
+	if(lastMovementKey=="yd") prev_y--;
+	else if(lastMovementKey=="yi") prev_y++;
+	else if(lastMovementKey=="xd") prev_x--;
+	else if(lastMovementKey=="xi") prev_x++;
+
+	var save;
+	var i=0;
+	save = {"x" : prev_x , "y" : prev_y};
+
+	var causality = detectFood()
+	if(causality[0]){
+		//console.log("appended", JSON.stringify(gobj,null,2));
+		if(causality[1]!='food'){
+			alert(causality[2]);
+			location.reload();
+		}
+		gobj.push({ "x" : prev_x, "y" : prev_y });
+		generateFood();
+		//document.getElementById('a'+save.x+"_"+save.y).value="e";
+	}
+	reset();
+	for(;i<gobj.length;i++){
+		console.log("did not come")
+		temp1 = gobj[i];
+
+		gobj[i]=save;
+
+		t= document.getElementById('a'+save.x+"_"+save.y);
+		t.value="e";
+		t.style.background="#000";
+
+		save=temp1;
+	}
+	//gobj[0].x=prev_x;
+	//gobj[0].y=prev_y;
+	t=document.getElementById('a'+prev_x+"_"+prev_y);
+	t.value="e";
+	t.style.background="#000";
+
+	setTimeout(function(){
+		_initialMotion();
+	},200);
+}
+function _takeAction(e) {
+	var choice = { 87 : "xd" , 65 : "yd" , 68 : "yi" , 83 : "xi" }[ e.keyCode ];
+	if(lastMovementKey!=choice){
+		if(choice!=undefined){
+
+			if(gobj.length>2  ){
+				if( !(lastMovementKey == "xd" && choice == "xi") && !(lastMovementKey == "yd" &&  choice == "yi" ) && !( lastMovementKey =="yi" && choice == "yd"  ) && !( lastMovementKey == "xi" && choice == "xd" )  ){
+					lastMovementKey = choice;
+				}
+			}else {
+				lastMovementKey=choice;
+			}
+			if(exitCode==0){
+				_initialMotion();
+				exitCode=1;
+			}
+		}
+	}
+}
+document.onkeydown = _takeAction;
+</script>
+<style>
+.box{
+	width:12px;
+	pointer-events: none;
+	border-color: #fff;
+	border-width: 2px;
+	border-style: solid;
+	border-radius: 12px;
+}
+nav {
+	background: #000;
+	width : 100%;
+	left:0;
+	top:0;
+	height: 5%;
+	position :absolute;
+	color:#fff;
+}
+body {
+	font-family: Arial;
+}button{
+	background: #000;
+	color:#fff;
+	border :1px solid;
+}
+</style>
+<body onload="_draw()">
+<nav>
+	<div style="margin-top: 0.5%;margin-left:40%">
+		Retro Classic Snake Game 
+	</div>
+</nav>
+	<div style="margin-top:5%">
+		<div id="board" style="max-width: 364px;margin: 0 auto;">
+    		<div id="mbox" style="border-style:solid;border-width: 2px;background: #fff"></div>
+    			Score : <input type="text" id="score" style="border: 0px solid #fff;font-family: Arial;font-size:80%;font-weight:bold">
+		</div>
+	</div>
+	<div id="bottomDown" style="margin-left: 45%;margin-top:5%">
+		<span >
+		Direction keys :
+		</span>
+		<table>
+			<tr>
+				<td>&nbsp;</td>
+				<td ><button>W</button></td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><button>A</button></td>
+				<td><button>S</button></td>
+				<td><button>D</button></td>
+			</tr>
+		</table><br>
+
+	</div>
+</body>
+</html>
